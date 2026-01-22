@@ -37,7 +37,7 @@ export const riskRatioCalc: CalculatorDefinition<{
     return {
       results: [
         { label: 'Risk Ratio (RR)', value: res.value.toFixed(3), isMain: true },
-        { label: '95% CI (Taylor Series)', value: ciUtils.formatCI(res.lower, res.upper, 3), isMain: true },
+        { label: '95% Confidence Interval', value: ciUtils.formatCI(res.lower, res.upper, 3), isMain: true },
         { label: 'Risk in Exposed', value: formatPercent(table.a / (table.a + table.b)) },
         { label: 'Risk in Unexposed', value: formatPercent(table.c / (table.c + table.d)) }
       ],
@@ -81,7 +81,7 @@ export const oddsRatioCalc: CalculatorDefinition<{
     return {
       results: [
         { label: 'Odds Ratio (OR)', value: res.value.toFixed(3), isMain: true },
-        { label: '95% CI (Woolf)', value: ciUtils.formatCI(res.lower, res.upper, 3), isMain: true },
+        { label: '95% Confidence Interval', value: ciUtils.formatCI(res.lower, res.upper, 3), isMain: true },
         { label: 'Odds in Exposed', value: (table.a / table.b).toFixed(3) },
         { label: 'Odds in Unexposed', value: (table.c / table.d).toFixed(3) }
       ],

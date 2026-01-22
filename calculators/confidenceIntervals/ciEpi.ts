@@ -65,13 +65,13 @@ export const ciEpi: CalculatorDefinition<{
     return {
       results: [
         { label: 'Odds Ratio (OR)', value: isFinite(orPoint) ? orPoint.toFixed(3) : '∞', isMain: true },
-        { label: 'OR 95% CI (Woolf)', value: ciUtils.formatCI(orLower, orUpper, 3) },
+        { label: 'OR Confidence Interval', value: ciUtils.formatCI(orLower, orUpper, 3) },
         { label: 'Relative Risk (RR)', value: isFinite(rrPoint) ? rrPoint.toFixed(3) : '∞', isMain: true },
-        { label: 'RR 95% CI (Taylor)', value: ciUtils.formatCI(rrLower, rrUpper, 3) },
+        { label: 'RR Confidence Interval', value: ciUtils.formatCI(rrLower, rrUpper, 3) },
         { label: 'Risk Difference (RD)', value: rdPoint.toFixed(4) },
-        { label: 'RD 95% CI', value: ciUtils.formatCI(rdLower, rdUpper, 4) }
+        { label: 'RD Confidence Interval', value: ciUtils.formatCI(rdLower, rdUpper, 4) }
       ],
-      interpretation: `Point estimates: OR=${orPoint.toFixed(2)}, RR=${rrPoint.toFixed(2)}. This summarizes the strength of association between exposure and outcome.`,
+      interpretation: `The point estimates are OR=${orPoint.toFixed(2)} and RR=${rrPoint.toFixed(2)}. The ${conf}% confidence intervals describe the statistical precision of these findings.`,
       rCode,
       formula: `OR = (ad)/(bc)\nRR = [a/(a+b)] / [c/(c+d)]\nRD = [a/(a+b)] - [c/(c+d)]`
     };

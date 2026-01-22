@@ -1,6 +1,6 @@
 
 /**
- * StatLab Hub - Precision Statistical Utilities
+ * EpiStatKit - Precision Statistical Utilities
  * Using rational approximations and Cornish-Fisher expansions for distributions.
  */
 
@@ -131,7 +131,20 @@ export const getFCritical = (p: number, d1: number, d2: number): number => {
 
 const lambda = (z: number) => (z * z - 3) / 6;
 
+/**
+ * Generic Confidence Interval formatter.
+ * Standardizes display as [Lower, Upper].
+ */
 export const formatCI = (low: number, high: number, precision: number) => {
+  const l = isFinite(low) ? low.toFixed(precision) : "-∞";
+  const h = isFinite(high) ? high.toFixed(precision) : "∞";
+  return `[${l}, ${h}]`;
+};
+
+/**
+ * Specialized Proportion CI formatter (clamped to 0-1).
+ */
+export const formatPropCI = (low: number, high: number, precision: number) => {
   const l = isFinite(low) ? Math.max(0, low).toFixed(precision) : "0.0000";
   const h = isFinite(high) ? Math.min(1, high).toFixed(precision) : "1.0000";
   return `[${l}, ${h}]`;

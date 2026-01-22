@@ -48,7 +48,6 @@ export const ciProportion: CalculatorDefinition<{
     const wilsonHigh = (wilsonCenter + wilsonSpread) / wilsonDenom;
 
     // 3. Wilson Score with Continuity Correction (CC)
-    // Ref: Newcombe (1998)
     const wilsonCCLow = (2 * n * p + z2 - 1 - zCrit * Math.sqrt(z2 - (2 + 1/n) + 4 * p * (n * (1 - p) + 1))) / (2 * (n + z2));
     const wilsonCCHigh = (2 * n * p + z2 + 1 + zCrit * Math.sqrt(z2 + (2 - 1/n) + 4 * p * (n * (1 - p) - 1))) / (2 * (n + z2));
 
@@ -90,12 +89,12 @@ binom.test(x, n, conf.level=conf)$conf.int`;
     return {
       results: [
         { label: 'Observed Proportion (p̂)', value: p.toFixed(precision), isMain: true },
-        { label: 'Wilson Score CI', value: ciUtils.formatCI(wilsonLow, wilsonHigh, precision), isMain: true, description: "Standard recommended interval" },
-        { label: 'Clopper-Pearson CI', value: ciUtils.formatCI(cpLow, cpHigh, precision), isMain: true, description: "Exact (Conservative) interval" },
-        { label: 'Wilson Score (with CC) CI', value: ciUtils.formatCI(wilsonCCLow, wilsonCCHigh, precision), description: "With continuity correction" },
-        { label: 'Normal (Wald) CI', value: ciUtils.formatCI(wLow, wHigh, precision), description: "Approximation (unreliable if n*p < 5)" }
+        { label: 'Wilson Score CI', value: ciUtils.formatPropCI(wilsonLow, wilsonHigh, precision), isMain: true, description: "Standard recommended interval" },
+        { label: 'Clopper-Pearson CI', value: ciUtils.formatPropCI(cpLow, cpHigh, precision), isMain: true, description: "Exact (Conservative) interval" },
+        { label: 'Wilson Score (with CC) CI', value: ciUtils.formatPropCI(wilsonCCLow, wilsonCCHigh, precision), description: "With continuity correction" },
+        { label: 'Normal (Wald) CI', value: ciUtils.formatPropCI(wLow, wHigh, precision), description: "Approximation (unreliable if n*p < 5)" }
       ],
-      interpretation: `The point estimate is ${p.toFixed(precision)}. The Wilson Score interval is ${ciUtils.formatCI(wilsonLow, wilsonHigh, precision)}. For clinical exactness, the Clopper-Pearson interval is ${ciUtils.formatCI(cpLow, cpHigh, precision)}.`,
+      interpretation: `The point estimate is ${p.toFixed(precision)}. The Wilson Score interval is ${ciUtils.formatPropCI(wilsonLow, wilsonHigh, precision)}. For clinical exactness, the Clopper-Pearson interval is ${ciUtils.formatPropCI(cpLow, cpHigh, precision)}.`,
       rCode,
       formula: `Wilson: [p + z²/2n ± z√{p(1-p)/n + z²/4n²}] / (1 + z²/n)\nWald: p ± z√(p(1-p)/n)`
     };

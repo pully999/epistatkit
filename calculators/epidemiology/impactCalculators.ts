@@ -2,6 +2,7 @@
 import { z } from 'zod';
 import { Category, CalculatorDefinition } from '../../types';
 import { computeRD, formatPercent } from './utils';
+import * as ciUtils from '../confidenceIntervals/utils';
 
 export const riskDiffCalc: CalculatorDefinition<{ 
   exposed_cases: number, 
@@ -36,6 +37,7 @@ export const riskDiffCalc: CalculatorDefinition<{
     return {
       results: [
         { label: 'Risk Difference (RD)', value: res.value.toFixed(4), isMain: true },
+        { label: '95% Confidence Interval', value: ciUtils.formatCI(res.lower, res.upper, 4), isMain: true },
         { label: 'RD Percentage', value: formatPercent(res.value) },
         { label: res.value < 0 ? 'Number Needed to Treat (NNT)' : 'Number Needed to Harm (NNH)', value: isFinite(res.nnt) ? res.nnt : 'N/A', isMain: true }
       ],
