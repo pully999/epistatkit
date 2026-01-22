@@ -7,7 +7,7 @@ import {
   LineChart as LucideLineChart, Lightbulb, Settings2,
   Stethoscope, Activity, TrendingUp, Target, FileUp, FileSpreadsheet,
   BarChart3, Binary, Scale, Search, ChevronDown, PieChart, BookOpen, ExternalLink,
-  Code2, Copy, Check, Beaker, Sigma
+  Code2, Copy, Check, Beaker, Sigma, Mail, Github
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { 
@@ -99,6 +99,32 @@ const ReferencesSection = ({ references }: { references?: any[] }) => {
           </div>
         ))}
       </div>
+    </div>
+  );
+};
+
+const PowerSpectrumTable = ({ data }: { data?: any[] }) => {
+  if (!data || data.length === 0) return null;
+  return (
+    <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white">
+      <table className="w-full text-left text-xs">
+        <thead className="bg-slate-50 text-slate-400 font-black uppercase tracking-widest">
+          <tr>
+            <th className="px-4 py-3">Power (%)</th>
+            <th className="px-4 py-3">N (Per Group)</th>
+            {data[0].nTotal && <th className="px-4 py-3">N (Total)</th>}
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-slate-50">
+          {data.map((row, idx) => (
+            <tr key={idx} className="hover:bg-indigo-50/30 transition-colors">
+              <td className="px-4 py-3 font-bold text-slate-600">{row.power}%</td>
+              <td className="px-4 py-3 font-mono text-indigo-700 font-bold">{row.n}</td>
+              {row.nTotal && <td className="px-4 py-3 font-mono text-slate-500">{row.nTotal}</td>}
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 };
@@ -407,9 +433,15 @@ const CalculatorPage = () => {
                       <pre className="text-xs font-mono text-slate-600 whitespace-pre-wrap">{results.formula}</pre>
                     </div>
                   )}
+                  {results.powerSpectrum && (
+                    <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100">
+                      <h4 className="text-[10px] font-black uppercase text-slate-400 mb-4">Power Spectrum Table</h4>
+                      <PowerSpectrumTable data={results.powerSpectrum} />
+                    </div>
+                  )}
                   {showPlots && (calc.metadata.category === Category.SAMPLE_SIZE || calc.metadata.category === Category.EPIDEMIOLOGY) && (
                     <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100">
-                        <h4 className="text-[10px] font-black uppercase text-slate-400 mb-4">Sample Size Spectrum</h4>
+                        <h4 className="text-[10px] font-black uppercase text-slate-400 mb-4">Sensitivity Analysis (Power vs N)</h4>
                         <PowerCurve calc={calc} formData={formData} />
                     </div>
                   )}
@@ -466,6 +498,19 @@ const HomeDashboard = () => {
 
 const App = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [contactOpen, setContactOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setContactOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   return (
     <Router>
       <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900">
@@ -477,9 +522,46 @@ const App = () => {
               <span className="text-2xl font-black tracking-tighter">EpiStatKit</span>
             </Link>
           </div>
-          <div className="hidden md:flex items-center space-x-6 text-[11px] font-black uppercase tracking-widest text-slate-400">
-            <span className="flex items-center space-x-1"><ShieldCheck size={14} className="text-green-500" /> <span>Clinical Standard</span></span>
-            <span className="flex items-center space-x-1"><Settings2 size={14} className="text-indigo-400" /> <span>v1.2.6-stable</span></span>
+          <div className="flex items-center space-x-4 md:space-x-8">
+            <div className="hidden md:flex items-center space-x-6 text-[11px] font-black uppercase tracking-widest text-slate-400">
+              <span className="flex items-center space-x-1"><ShieldCheck size={14} className="text-green-500" /> <span>Clinical Standard</span></span>
+              <span className="flex items-center space-x-1"><Settings2 size={14} className="text-indigo-400" /> <span>v1.2.6-stable</span></span>
+            </div>
+            
+            <div className="relative" ref={dropdownRef}>
+              <button 
+                onClick={() => setContactOpen(!contactOpen)}
+                className="flex items-center space-x-2 px-4 py-2 bg-indigo-50 text-indigo-700 rounded-full text-[11px] font-black uppercase tracking-widest hover:bg-indigo-100 transition-all border border-indigo-100"
+              >
+                <Mail size={14} />
+                <span>Contact Us</span>
+                <ChevronDown size={12} className={`transition-transform duration-200 ${contactOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {contactOpen && (
+                <div className="absolute right-0 mt-3 w-64 bg-white border border-slate-200 rounded-2xl shadow-2xl p-4 space-y-3 z-50 animate-in fade-in zoom-in duration-200">
+                  <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Get in touch</div>
+                  <a href="mailto:pulkitsaxena999@gmail.com" className="flex items-center space-x-3 p-3 hover:bg-slate-50 rounded-xl transition-all group">
+                    <div className="w-8 h-8 bg-indigo-50 rounded-lg flex items-center justify-center text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                      <Mail size={16} />
+                    </div>
+                    <div className="flex-1 overflow-hidden">
+                      <div className="text-xs font-bold text-slate-800">Email Support</div>
+                      <div className="text-[10px] text-slate-500 truncate">pulkitsaxena999@gmail.com</div>
+                    </div>
+                  </a>
+                  <a href="https://github.com/pully999/epistatkit" target="_blank" rel="noreferrer" className="flex items-center space-x-3 p-3 hover:bg-slate-50 rounded-xl transition-all group">
+                    <div className="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center text-slate-600 group-hover:bg-slate-900 group-hover:text-white transition-all">
+                      <Github size={16} />
+                    </div>
+                    <div className="flex-1 overflow-hidden">
+                      <div className="text-xs font-bold text-slate-800">Source Code</div>
+                      <div className="text-[10px] text-slate-500 truncate">github.com/pully999</div>
+                    </div>
+                  </a>
+                </div>
+              )}
+            </div>
           </div>
         </nav>
         <div className="flex flex-1 overflow-hidden">

@@ -41,6 +41,7 @@ export interface CalculatorDefinition<T extends Record<string, any>> {
     steps?: string[];
     formula?: string;
     rCode?: string; // Generated R code string based on inputs
+    powerSpectrum?: { power: number; n: number; nTotal?: number }[]; // Optional power spectrum data
   };
   examples: T[];
   references?: Reference[];
