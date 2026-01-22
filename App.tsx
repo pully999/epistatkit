@@ -17,14 +17,25 @@ import {
 import { getAllCalculators, getCalculatorById } from './calculators/registry';
 import { Category } from './types';
 
-// --- Professional Logo Component ---
-const StatLabLogo = ({ className = "w-8 h-8" }: { className?: string }) => (
+// --- Professional EpiStatKit Logo Component (Matches provided image) ---
+const EpiStatKitLogo = ({ className = "w-8 h-8" }: { className?: string }) => (
   <div className={`relative flex items-center justify-center ${className} bg-indigo-600 rounded-xl shadow-lg shadow-indigo-200 overflow-hidden`}>
     <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-white">
-      <path d="M4 20V14M8 20V10M12 20V15M16 20V7M20 20V11" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
-      <path d="M4 6L12 3L20 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      {/* House-like Chevron Roof */}
+      <path 
+        d="M6 10.5L12 7.5L18 10.5" 
+        stroke="currentColor" 
+        strokeWidth="2.5" 
+        strokeLinecap="round" 
+        strokeLinejoin="round"
+      />
+      {/* 4 Vertical Bars of varying heights with rounded caps */}
+      <rect x="7" y="14" width="1.5" height="4" rx="0.75" fill="currentColor"/>
+      <rect x="10" y="12" width="1.5" height="6" rx="0.75" fill="currentColor"/>
+      <rect x="13" y="15" width="1.5" height="3" rx="0.75" fill="currentColor"/>
+      <rect x="16" y="11" width="1.5" height="7" rx="0.75" fill="currentColor"/>
     </svg>
-    <div className="absolute top-0 right-0 w-2 h-2 bg-indigo-400 rounded-full translate-x-1/2 -translate-y-1/2 blur-[1px]"></div>
+    <div className="absolute top-0 right-0 w-3 h-3 bg-white/10 rounded-full translate-x-1/2 -translate-y-1/2 blur-sm"></div>
   </div>
 );
 
@@ -95,7 +106,7 @@ const ReferencesSection = ({ references }: { references?: any[] }) => {
 const PowerCurve = ({ calc, formData }: { calc: any, formData: any }) => {
   const dataPoints = useMemo(() => {
     if (!formData || !calc || Object.keys(formData).length === 0) return [];
-    const nKeys = ['n', 'n1', 'nPerGroup', 'nIndividual', 'T', 'observed', 'tp', 'n2', 'population', 'personTime', 'cases'];
+    const nKeys = ['n', 'n1', 'nPerGroup', 'nIndividual', 'T', 'observed', 'tp', 'n2', 'population', 'personTime', 'cases', 'total_n'];
     const activeNKey = nKeys.find(key => typeof formData[key] === 'number');
     if (!activeNKey) return [];
     const baseN = formData[activeNKey];
@@ -295,6 +306,21 @@ const CalculatorPage = () => {
 
   const hasDatasetInput = Object.keys(schemaShape).some(k => k === 'numbers' || k === 'text' || k === 'dataset' || k === 'var1' || k === 'var2');
 
+  const formatLabel = (key: string) => {
+    const field = schemaShape[key];
+    if (field && field._def && field._def.description) {
+      return field._def.description;
+    }
+
+    return key
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ')
+      .replace(/([A-Z])/g, ' $1')
+      .replace(/\s+/g, ' ')
+      .trim();
+  };
+
   return (
     <div className="p-4 md:p-10 max-w-7xl mx-auto pb-32">
       <div className="mb-10 space-y-2">
@@ -328,7 +354,7 @@ const CalculatorPage = () => {
                 const isDatasetField = key === 'numbers' || key === 'text' || key === 'dataset' || key === 'var1' || key === 'var2';
                 return (
                   <div key={key}>
-                    <label className="text-[9px] font-black uppercase text-slate-400 tracking-tight mb-1 block">{key.replace(/([A-Z])/g, ' $1').replace(/^p([0-9])/, 'p$1')}</label>
+                    <label className="text-[9px] font-black uppercase text-slate-400 tracking-tight mb-1 block">{formatLabel(key)}</label>
                     <input type={isDatasetField ? "text" : "number"} step="any" placeholder={isDatasetField ? "Enter data list" : ""} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-mono focus:ring-2 focus:ring-indigo-500 outline-none" value={formData[key] || ''} onChange={(e) => {
                         const val = e.target.value;
                         setFormData({...formData, [key]: isDatasetField ? val : parseFloat(val)})
@@ -412,10 +438,10 @@ const HomeDashboard = () => {
     <div className="p-6 md:p-16 max-w-7xl mx-auto space-y-16">
       <div className="space-y-6">
         <div className="flex items-center space-x-4 mb-4">
-          <StatLabLogo className="w-16 h-16" />
-          <h1 className="text-5xl md:text-7xl font-black text-slate-900 tracking-tighter">EpiStatKit<span className="text-indigo-600"></span></h1>
+          <EpiStatKitLogo className="w-16 h-16" />
+          <h1 className="text-5xl md:text-7xl font-black text-slate-900 tracking-tighter">EpiStat<span className="text-indigo-600">Kit</span></h1>
         </div>
-        <p className="text-xl md:text-2xl text-slate-500 font-medium max-w-2xl leading-relaxed">Unified medical statistics and epidemiologic monitoring for precision research.</p>
+        <p className="text-xl md:text-2xl text-slate-500 font-medium max-w-2xl leading-relaxed">Advanced biostatistics and epidemiology toolkit for clinical monitoring and research.</p>
       </div>
       {categories.map(cat => (
         <section key={cat} className="space-y-8">
@@ -447,13 +473,13 @@ const App = () => {
           <div className="flex items-center space-x-6">
             <button onClick={() => setSidebarOpen(true)} className="p-2 md:hidden"><Menu size={20}/></button>
             <Link to="/" className="flex items-center space-x-3">
-              <StatLabLogo className="w-8 h-8" />
+              <EpiStatKitLogo className="w-8 h-8" />
               <span className="text-2xl font-black tracking-tighter">EpiStatKit</span>
             </Link>
           </div>
           <div className="hidden md:flex items-center space-x-6 text-[11px] font-black uppercase tracking-widest text-slate-400">
             <span className="flex items-center space-x-1"><ShieldCheck size={14} className="text-green-500" /> <span>Clinical Standard</span></span>
-            <span className="flex items-center space-x-1"><Settings2 size={14} className="text-indigo-400" /> <span>v1.2.0-stable</span></span>
+            <span className="flex items-center space-x-1"><Settings2 size={14} className="text-indigo-400" /> <span>v1.2.6-stable</span></span>
           </div>
         </nav>
         <div className="flex flex-1 overflow-hidden">
