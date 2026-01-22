@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { Category, CalculatorDefinition } from '../../types';
 import { computeRD, formatPercent } from './utils';
 
-export const riskDiffCalc: CalculatorDefinition<{ a: number, b: number, c: number, d: number }> = {
+export const riskDiffCalc: CalculatorDefinition<{ Exposed_cases: number, Unexposed_cases: number, Exposed_control: number, Unexposed_control: number }> = {
   metadata: {
     id: 'epi-risk-diff',
     title: 'Risk Difference & NNT',
@@ -15,7 +15,7 @@ export const riskDiffCalc: CalculatorDefinition<{ a: number, b: number, c: numbe
     a: z.number().min(0), b: z.number().min(0),
     c: z.number().min(0), d: z.number().min(0)
   }),
-  examples: [{ a: 10, b: 90, c: 50, d: 50 }],
+  examples: [{ Exposed_cases: 10, Unexposed_cases: 90, Exposed_control: 50, Unexposed_control: 50 }],
   compute: (data) => {
     const res = computeRD(data);
     const rCode = `# Risk Difference & NNT Analysis\ntab <- matrix(c(${data.a}, ${data.c}, ${data.b}, ${data.d}), nrow = 2)\n\n# install.packages("epiR")\nlibrary(epiR)\nepi.2by2(tab, method = "cohort.count")`;
