@@ -33,13 +33,25 @@ export const sampleSizeMeans: CalculatorDefinition<{
     const { m1, m2, sd, power, alpha, ratio } = data;
     const delta = Math.abs(m1 - m2);
     const zAlpha = ciUtils.getZCritical((1 - alpha) * 100);
-    const zPower = ciUtils.getZCritical((power * 2 - 1) * 100);
     
-    const n1 = Math.ceil(
-      (Math.pow(sd, 2) * (1 + 1/ratio) * Math.pow(zAlpha + zPower, 2)) / Math.pow(delta, 2)
-    );
+    const calculateN = (targetPower: number) => {
+      const zPower = ciUtils.getZCritical((targetPower * 2 - 1) * 100);
+      const n1 = Math.ceil(
+        (Math.pow(sd, 2) * (1 + 1/ratio) * Math.pow(zAlpha + zPower, 2)) / Math.pow(delta, 2)
+      );
+      return { n: n1, nTotal: Math.ceil(n1 * (1 + ratio)) };
+    };
+
+    const mainN = calculateN(power);
+    const n1 = mainN.n;
     const n2 = Math.ceil(n1 * ratio);
     const d = delta / sd;
+
+    const spectrumPowers = [0.70, 0.75, 0.80, 0.85, 0.90, 0.95, 0.99];
+    const powerSpectrum = spectrumPowers.map(p => ({
+      power: p * 100,
+      ...calculateN(p)
+    }));
 
     const rCode = `# Requires 'pwr' package\n# install.packages("pwr")\nlibrary(pwr)\n\n# Power analysis for two means\npwr.t.test(d = ${d.toFixed(4)}, \n           sig.level = ${alpha}, \n           power = ${power}, \n           type = "two.sample", \n           alternative = "two.sided")\n\n# Note: pwr assumes equal n. For unequal n:\n# pwr.t2n.test(n1 = ${n1}, n2 = ${n2}, d = ${d.toFixed(4)}, ...)` ;
 
@@ -52,7 +64,8 @@ export const sampleSizeMeans: CalculatorDefinition<{
       ],
       interpretation: `Required N: ${n1} in G1, ${n2} in G2.`,
       rCode,
-      formula: `n1 = [σ²(1 + 1/k)(Z_α/2 + Z_β)²] / Δ²`
+      formula: `n1 = [σ²(1 + 1/k)(Z_α/2 + Z_β)²] / Δ²`,
+      powerSpectrum
     };
   }
 };

@@ -28,12 +28,23 @@ export const sampleSizeNonInferiority: CalculatorDefinition<{
   compute: (data) => {
     const { pStandard, pTest, margin, power, alpha } = data;
     const zAlpha = ciUtils.getZCritical((1 - alpha * 2) * 100); 
-    const zPower = ciUtils.getZCritical((power * 2 - 1) * 100);
     
-    const numerator = Math.pow(zAlpha + zPower, 2) * (pStandard * (1 - pStandard) + pTest * (1 - pTest));
-    const denominator = Math.pow(pTest - pStandard - margin, 2);
-    
-    const n = Math.ceil(numerator / denominator);
+    const calculateN = (targetPower: number) => {
+      const zPower = ciUtils.getZCritical((targetPower * 2 - 1) * 100);
+      const numerator = Math.pow(zAlpha + zPower, 2) * (pStandard * (1 - pStandard) + pTest * (1 - pTest));
+      const denominator = Math.pow(pTest - pStandard - margin, 2);
+      const nPerArm = Math.ceil(numerator / denominator);
+      return { n: nPerArm, nTotal: nPerArm * 2 };
+    };
+
+    const mainN = calculateN(power);
+    const n = mainN.n;
+
+    const spectrumPowers = [0.70, 0.75, 0.80, 0.85, 0.90, 0.95, 0.99];
+    const powerSpectrum = spectrumPowers.map(p => ({
+      power: p * 100,
+      ...calculateN(p)
+    }));
 
     const rCode = `# Non-Inferiority Sample Size
 # Requires TrialSize or TrialDesign packages
@@ -52,12 +63,12 @@ TwoSampleProportion.NonInferiority(
       results: [
         { label: 'Required per Group (n)', value: n, isMain: true },
         { label: 'Total Sample Size', value: n * 2 },
-        { label: 'Z-Alpha (One-sided)', value: zAlpha.toFixed(3) },
-        { label: 'Z-Beta (Power)', value: zPower.toFixed(3) }
+        { label: 'Z-Alpha (One-sided)', value: zAlpha.toFixed(3) }
       ],
       interpretation: `To demonstrate non-inferiority within a ${margin*100}% margin, you need ${n} subjects per arm.`,
       rCode,
-      formula: `n = [(Z_α + Z_β)² * (p1q1 + p2q2)] / (p1 - p2 - δ)²`
+      formula: `n = [(Z_α + Z_β)² * (p1q1 + p2q2)] / (p1 - p2 - δ)²`,
+      powerSpectrum
     };
   }
 };

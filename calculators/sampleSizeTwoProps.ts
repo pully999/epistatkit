@@ -33,13 +33,25 @@ export const sampleSizeTwoProps: CalculatorDefinition<{
     const qAvg = 1 - pAvg;
     
     const zAlpha = ciUtils.getZCritical((1 - alpha) * 100);
-    const zPower = ciUtils.getZCritical((power * 2 - 1) * 100);
 
-    const n1 = Math.ceil(
-      (Math.pow(zAlpha * Math.sqrt((1 + 1/ratio) * pAvg * qAvg) + zPower * Math.sqrt(p1 * q1 + (p2 * q2) / ratio), 2)) / 
-      Math.pow(p1 - p2, 2)
-    );
+    const calculateN = (targetPower: number) => {
+      const zPower = ciUtils.getZCritical((targetPower * 2 - 1) * 100);
+      const n1 = Math.ceil(
+        (Math.pow(zAlpha * Math.sqrt((1 + 1/ratio) * pAvg * qAvg) + zPower * Math.sqrt(p1 * q1 + (p2 * q2) / ratio), 2)) / 
+        Math.pow(p1 - p2, 2)
+      );
+      return { n: n1, nTotal: Math.ceil(n1 * (1 + ratio)) };
+    };
+
+    const mainN = calculateN(power);
+    const n1 = mainN.n;
     const n2 = Math.ceil(n1 * ratio);
+
+    const spectrumPowers = [0.70, 0.75, 0.80, 0.85, 0.90, 0.95, 0.99];
+    const powerSpectrum = spectrumPowers.map(p => ({
+      power: p * 100,
+      ...calculateN(p)
+    }));
 
     const rCode = `# Requires 'pwr' package\n# install.packages("pwr")\nlibrary(pwr)\n\n# Compute effect size h\nh_val <- ES.h(${p1}, ${p2})\n\n# Sample size calculation\npwr.2p.test(h = h_val, sig.level = ${alpha}, power = ${power})`;
 
@@ -53,7 +65,8 @@ export const sampleSizeTwoProps: CalculatorDefinition<{
       ],
       interpretation: `To detect a difference between ${p1*100}% and ${p2*100}% with ${power*100}% power, a total of ${n1+n2} subjects are required.`,
       rCode,
-      formula: `n1 = [Z_α√( (1+1/k)PQ ) + Z_β√( p1q1 + p2q2/k )]² / (p1 - p2)²`
+      formula: `n1 = [Z_α√( (1+1/k)PQ ) + Z_β√( p1q1 + p2q2/k )]² / (p1 - p2)²`,
+      powerSpectrum
     };
   }
 };

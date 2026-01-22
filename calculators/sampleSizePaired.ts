@@ -26,9 +26,21 @@ export const sampleSizePaired: CalculatorDefinition<{
   compute: (data) => {
     const { diff, sdDiff, power, alpha } = data;
     const zAlpha = ciUtils.getZCritical((1 - alpha) * 100);
-    const zPower = ciUtils.getZCritical((power * 2 - 1) * 100);
     
-    const n = Math.ceil(Math.pow(sdDiff * (zAlpha + zPower) / diff, 2));
+    const calculateN = (targetPower: number) => {
+      const zPower = ciUtils.getZCritical((targetPower * 2 - 1) * 100);
+      const n = Math.ceil(Math.pow(sdDiff * (zAlpha + zPower) / diff, 2));
+      return { n };
+    };
+
+    const mainN = calculateN(power);
+    const n = mainN.n;
+
+    const spectrumPowers = [0.70, 0.75, 0.80, 0.85, 0.90, 0.95, 0.99];
+    const powerSpectrum = spectrumPowers.map(p => ({
+      power: p * 100,
+      ...calculateN(p)
+    }));
 
     const rCode = `# Requires 'pwr' package\nlibrary(pwr)\n\n# Cohen's d for paired samples\nd_val <- ${diff} / ${sdDiff}\n\n# Power analysis\npwr.t.test(d = d_val, sig.level = ${alpha}, power = ${power}, type = "paired")`;
 
@@ -40,7 +52,8 @@ export const sampleSizePaired: CalculatorDefinition<{
       ],
       interpretation: `To detect a mean difference of ${diff} with ${power*100}% power, you need to study ${n} pairs (individuals measured twice).`,
       rCode,
-      formula: `n = [σ_diff * (Z_α/2 + Z_β) / Δ]²`
+      formula: `n = [σ_diff * (Z_α/2 + Z_β) / Δ]²`,
+      powerSpectrum
     };
   }
 };
